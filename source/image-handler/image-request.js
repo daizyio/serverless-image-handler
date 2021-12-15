@@ -60,11 +60,30 @@ class ImageRequest {
             this.bucket = this.parseImageBucket(event, this.requestType);
             this.key = this.parseImageKey(event, this.requestType);
             this.edits = this.parseImageEdits(event, this.requestType);
-            this.originalImage = await this.getOriginalImage(this.bucket, this.key);
             this.headers = this.parseImageHeaders(event, this.requestType);
 
             if (!this.headers) {
                 delete this.headers;
+            }
+
+            try {
+              this.originalImage = await this.getOriginalImage(this.bucket, this.key);
+            } catch (err) {
+              // if original image isn't available, get the fallback image
+              if (process.env.ENABLE_DEFAULT_FALLBACK_IMAGE === 'Yes'
+                    && process.env.DEFAULT_FALLBACK_IMAGE_BUCKET
+                    && process.env.DEFAULT_FALLBACK_IMAGE_BUCKET.replace(/\s/, '') !== ''
+                    && process.env.DEFAULT_FALLBACK_IMAGE_KEY
+                    && process.env.DEFAULT_FALLBACK_IMAGE_KEY.replace(/\s/, '') !== '') {
+                // if this errors, let it throw
+                this.originalImage = await this.getOriginalImage(process.env.DEFAULT_FALLBACK_IMAGE_BUCKET, process.env.DEFAULT_FALLBACK_IMAGE_KEY)
+              } else {
+                throw {
+                  status: ('NoSuchKey' === err.code) ? 404 : 500,
+                  code: err.code,
+                  message: err.message
+                }
+              }
             }
 
             // If the original image is SVG file and it has any edits but no output format, change the format to WebP.
@@ -87,7 +106,7 @@ class ImageRequest {
                     this.outputFormat = outputFormat;
                 }
             }
-            
+
             // Fix quality for Thumbor and Custom request type if outputFormat is different from quality type.
             if (this.outputFormat) {
                 const requestType = ['Custom', 'Thumbor'];
@@ -294,7 +313,7 @@ class ImageRequest {
         } catch(error) {
             console.error(error);
             isBase64Encoded = false;
-        } 
+        }
 
         if (matchDefault.test(path) && isBase64Encoded) {  // use sharp
             return 'Default';
@@ -411,7 +430,7 @@ class ImageRequest {
             status: 500,
             code: 'RequestTypeError',
             message: 'The file does not have an extension and the file type could not be inferred. Please ensure that your original image is of a supported file type (jpg, png, tiff, webp, svg). Refer to the documentation for additional guidance on forming image requests.'
-        };   
+        };
     }
 }
 }

@@ -44,10 +44,10 @@ exports.handler = async (event) => {
 
         // Default fallback image
         if (process.env.ENABLE_DEFAULT_FALLBACK_IMAGE === 'Yes'
-            && process.env.DEFAULT_FALLBACK_IMAGE_BUCKET
-            && process.env.DEFAULT_FALLBACK_IMAGE_BUCKET.replace(/\s/, '') !== ''
-            && process.env.DEFAULT_FALLBACK_IMAGE_KEY
-            && process.env.DEFAULT_FALLBACK_IMAGE_KEY.replace(/\s/, '') !== '') {
+              && process.env.DEFAULT_FALLBACK_IMAGE_BUCKET
+              && process.env.DEFAULT_FALLBACK_IMAGE_BUCKET.replace(/\s/, '') !== ''
+              && process.env.DEFAULT_FALLBACK_IMAGE_KEY
+              && process.env.DEFAULT_FALLBACK_IMAGE_KEY.replace(/\s/, '') !== '') {
             try {
                 const bucket = process.env.DEFAULT_FALLBACK_IMAGE_BUCKET;
                 const objectKey = process.env.DEFAULT_FALLBACK_IMAGE_KEY;

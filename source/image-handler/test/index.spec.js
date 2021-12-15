@@ -213,6 +213,12 @@ describe('index', function() {
       }).mockImplementationOnce(() => {
         return {
           promise() {
+            return Promise.reject('UnknownError');
+          }
+        };
+      }).mockImplementationOnce(() => {
+        return {
+          promise() {
             return Promise.resolve({
               Body: mockFallbackImage,
               ContentType: 'image/png'
